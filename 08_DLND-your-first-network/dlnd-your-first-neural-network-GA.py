@@ -80,7 +80,7 @@ class NeuralNetwork(object):
         self.lr = learning_rate
 
         # DEBUG to not print over each epoch
-        self.DEBUG = True
+        self.DEBUG = False
 
         #### Set this to your implemented sigmoid function ####
         # Activation function is the sigmoid function
@@ -112,12 +112,12 @@ class NeuralNetwork(object):
         output_grad = 1.0 #This is f(x) = x because we are using regression ## compute error gradient in the output unit
 
         # TODO: Backpropagated error
-        hidden_errors = output_errors * output_grad * final_outputs * (1.0 - final_outputs)  # errors propagated to the hidden layer
-        hidden_grad = np.dot(self.weights_input_to_hidden, hidden_errors)* hidden_outputs * (1 - hidden_outputs)  ## Calculate error gradient for hidden layer
+        hidden_errors = np.dot(self.weights_hidden_to_output.T, output_errors)  # errors propagated to the hidden layer
+        hidden_grad = hidden_outputs * (1.0 - hidden_outputs)  ## Calculate error gradient for hidden layer
 
         # TODO: Update the weights
-        self.weights_hidden_to_output += self.lr * (hidden_errors * hidden_outputs.T) # update hidden-to-output weights with gradient descent step
-        self.weights_input_to_hidden += self.lr * (hidden_grad.T * inputs) # update input-to-hidden weights with gradient descent step
+        self.weights_hidden_to_output += self.lr * np.dot(output_errors, hidden_outputs.T) # update hidden-to-output weights with gradient descent step
+        self.weights_input_to_hidden += self.lr * np.dot((hidden_errors*hidden_grad), inputs.T) # update input-to-hidden weights with gradient descent step
 
         if self.DEBUG:
             print ("self.weights_hidden_to_output.shape: ", self.weights_hidden_to_output.shape)
@@ -141,7 +141,7 @@ class NeuralNetwork(object):
 
         # TODO: Output layer
         final_inputs = np.dot(self.weights_hidden_to_output, hidden_outputs)  # signals into final output layer
-        final_outputs = self.activation_function(final_inputs)  # signals from final output layer
+        final_outputs = final_inputs  # signals from final output layer
 
         return final_outputs
 
@@ -152,9 +152,9 @@ def MSE(y, Y):
 import sys
 
 ### Set the hyperparameters here ###
-epochs = 1000
+epochs = 4000
 learning_rate = 0.01
-hidden_nodes = 10
+hidden_nodes = 32
 output_nodes = 1
 
 N_i = train_features.shape[1]
